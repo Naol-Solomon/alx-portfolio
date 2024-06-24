@@ -28,11 +28,11 @@ class UserController extends Controller
         ]);
 
         if (Auth()->attempt(['username'=> $incomingFields['loginusername'] ,'password'=> $incomingFields['loginpassword']])){
-            $request->session()->regenerate();
+            $request->session()->regenerate(); // to prevent attack
             return redirect('/')->with('success', 'You are successfully logged in.');
             
         } else{
-            return view('homepage');
+            return redirect('/')->with('failure', 'Invalid username or password');
         }
     }
     public function register(Request $request){
@@ -42,14 +42,8 @@ class UserController extends Controller
             'password' => ['required', 'confirmed']
         ]);
         $incomingFields['password'] = bcrypt($incomingFields['password']);
-        User::create($incomingFields);
-    }
-
-    // public function homepage(){
-    //     return view('homepage');
-    // }
-
-    public function singlePost(){
-        return view('single-post');
+        $user = User::create($incomingFields);
+        auth()->login($user);
+        return redirect('/')->with('success', 'You are successfully registered.');
     }
 }
